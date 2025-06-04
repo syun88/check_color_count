@@ -63,7 +63,10 @@ def maybe_pca(feats, out_dir, var_threshold):
     pca_full = PCA().fit(feats)
     cumvar = np.cumsum(pca_full.explained_variance_ratio_)
     n_comp = int(np.searchsorted(cumvar, var_threshold) + 1)
-    logging.info(f"STEP3: 累積寄与率 {var_threshold*100:.1f}% に必要な次元数 = {n_comp}")
+    # searchsorted can return len(cumvar) when var_threshold >= 1.0
+    n_comp = min(n_comp, feats.shape[1])
+    logging.info(
+        f"STEP3: 累積寄与率 {var_threshold*100:.1f}% に必要な次元数 = {n_comp}")
     pca = PCA(n_components=n_comp, random_state=0)
     feats_pca = pca.fit_transform(feats)
     np.save(os.path.join(out_dir, 'features_pca.npy'), feats_pca)
